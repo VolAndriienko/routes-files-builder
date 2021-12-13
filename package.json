@@ -1,0 +1,35 @@
+{
+  "name": "routes-files-builder-project",
+  "version": "1.0.0",
+  "description": "This lib helps to create routes file for Angular Universal and sitemap/robots files.",
+  "main": "src/index.ts",
+  "scripts": {
+    "prebuild": "rimraf dist",
+    "build": "tsc",
+    "postbuild": "shx cp src/package.json dist && shx cp src/README.md dist && cd dist && npm pack",
+    "restart": "cd demo && shx rm -rf node_modules && shx rm package-lock.json && npm i && cd.. && npm run start:ts",
+    "start": "node demo/index.js",
+    "start:ts": "nodemon demo/index.ts",
+    "publish": "cd dist && npm publish",
+    "publish:auth": "shx cp .npmrc dist && cd dist && npm publish"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VolAndriienko/routes-files-builder.git"
+  },
+  "keywords": [
+    "npmrc"
+  ],
+  "author": "volandriienko",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/VolAndriienko/routes-files-builder/issues"
+  },
+  "homepage": "https://github.com/VolAndriienko/routes-files-builder#readme",
+  "devDependencies": {
+    "shx": "^0.3.3"
+  },
+  "dependencies": {
+    "@types/node": "^16.10.5"
+  }
+}

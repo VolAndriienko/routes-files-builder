@@ -1,0 +1,25 @@
+{
+  "hostname": "https://future.bitergo.com",
+  "defaultLang": "en",
+  "langs": [ "en", "de", "nl", "pl" ],
+  "sitemapOptions": {
+    "lastmod": "2021-10-10",
+    "priorities": { "": "1.0" },
+    "defaultPriority": "0.8"
+  },
+  "routingFilePath": "demo/app-routing.module.ts",
+  "files": {
+    "robots": {
+      "name": "robots.txt",
+      "path": "files-folder"
+    },
+    "routes": {
+      "name": "routes.txt",
+      "path": "files-folder"
+    },
+    "sitemap": {
+      "name": "sitemap.xml",
+      "path": "files-folder"
+    }
+  }
+}

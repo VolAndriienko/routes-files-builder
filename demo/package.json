@@ -1,0 +1,15 @@
+{
+  "name": "demo",
+  "version": "1.0.0",
+  "description": "Just want to test before publish",
+  "main": "index.js",
+  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VolAndriienko/routes-files-builder.git"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "routes-files-builder": "file:../dist/routes-files-builder-0.0.1.tgz"
+  }
+}
