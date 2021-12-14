@@ -1,5 +1,5 @@
 import { PathsFilter } from "../filters/paths.filter";
-import { ContentBuilder, FileSaveOptions } from "../shared";
+import { defaultConfiguration, ContentBuilder, FileSaveOptions } from "../shared";
 
 export class SitemapBuilder extends ContentBuilder {
   constructor(
@@ -10,7 +10,14 @@ export class SitemapBuilder extends ContentBuilder {
   }
 
   protected getContent() {
-    const { sitemapPages, sitemapCustomLangPages, input: { langs, defaultLang } } = this.paths;
+    const {
+      sitemapPages,
+      sitemapCustomLangPages,
+      input: {
+        langs = defaultConfiguration.langs,
+        defaultLang = defaultConfiguration.defaultLang
+      }
+    } = this.paths;
 
     return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
@@ -21,8 +28,15 @@ ${Object.keys(sitemapCustomLangPages).map(page =>
 </urlset>`
   };
 
-  private getUrl(page, availableLangs, defaultLangValue) {
-    const { hostname, sitemapOptions: { defaultPriority, priorities, lastmod } } = this.paths.input;
+  private getUrl(page: string, availableLangs: string[], defaultLangValue: string) {
+    const {
+      hostname = defaultConfiguration.hostname,
+      sitemapOptions: {
+        defaultPriority = defaultConfiguration.sitemapOptions.defaultPriority,
+        priorities = defaultConfiguration.sitemapOptions.priorities,
+        lastmod = defaultConfiguration.sitemapOptions.lastmod
+      }
+    } = this.paths.input;
 
     return availableLangs.map(currentLang =>
       `  <url>

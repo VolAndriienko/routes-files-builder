@@ -8,16 +8,13 @@ import { MfrComponent } from "./mfr/mfr.component";
 import { PslComponent } from "./psl/psl.component";
 import { GraComponent } from "./gra/gra.component";
 import { EdiComponent } from "./edi/edi.component";
-import { BitergoOneComponent } from "./bitergo-one/bitergo-one.component";
 import { SapComponent } from "./sap/sap.component";
 import { LvsComponent } from "./lvs/lvs.component";
-import { LogisticsMallComponent } from "./logistics-mall/logistics-mall.component";
 import { GigasetComponent } from "./gigaset/gigaset.component";
 import { BarcodeUndRfidComponent } from "./barcode-und-rfid/barcode-und-rfid.component";
 import { ErrorComponent } from "./error/error.component";
 import { ImprintComponent } from "./imprint/imprint.component";
 import { PrivacyComponent } from "./privacy/privacy.component";
-import { ContactAndreasTrautmannComponent } from "./contact-andreas-trautmann/contact-andreas-trautmann.component";
 import { ContentComponent } from './content/content.component';
 import { CareerComponent } from "./career/career.component";
 import { JobDescriptionComponent } from "./job-description/job-description.component";
@@ -27,23 +24,20 @@ const routes: Routes = [
   {
     path: ':lang', component: ContentComponent,
     children: [
-      { path: '', component: StartComponent, pathMatch: 'full' },
+      { path: "", component: StartComponent, pathMatch: 'full' },
       { path: 'service', component: ServiceComponent, pathMatch: 'full' },
       { path: 'team', component: TeamComponent, pathMatch: 'full' },
       { path: 'lvd', component: LvdComponent, pathMatch: 'full' },
-      { path: 'mfr', component: MfrComponent, pathMatch: 'full' },
-      { path: 'psl', component: PslComponent, pathMatch: 'full' },
+      { path: "mfr", component: MfrComponent, pathMatch: 'full' },
+      { path: `psl`, component: PslComponent, pathMatch: 'full' },
       { path: 'gra', component: GraComponent, pathMatch: 'full' },
       { path: 'edi', component: EdiComponent, pathMatch: 'full' },
-      { path: 'bitergo-one', component: BitergoOneComponent, pathMatch: 'full' },
       { path: 'sap-support', component: SapComponent, pathMatch: 'full' },
       { path: 'lvs', component: LvsComponent, pathMatch: 'full' },
-      { path: 'logistics-mall', component: LogisticsMallComponent, pathMatch: 'full' },
       { path: 'gigaset', component: GigasetComponent, pathMatch: 'full' },
       { path: 'barcode', component: BarcodeUndRfidComponent, pathMatch: 'full' },
       { path: 'imprint', component: ImprintComponent, pathMatch: 'full' }, // robots-disallowed sitemap-ignore
       { path: 'privacy', component: PrivacyComponent, pathMatch: 'full' }, // robots-disallowed sitemap-ignore
-      { path: 'contact-andreas-trautmann', component: ContactAndreasTrautmannComponent, pathMatch: 'full' }, // sitemap-only-for-langs:de
       { path: 'career', component: CareerComponent, pathMatch: 'full' }, // sitemap-only-for-langs:de
       { path: 'job-description/:position', component: JobDescriptionComponent, pathMatch: 'full' }, //sitemap-ignore
       { path: 'not-found', component: ErrorComponent, pathMatch: 'full' }, // robots-disallowed  sitemap-ignore

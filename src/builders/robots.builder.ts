@@ -1,5 +1,5 @@
 import { PathsFilter } from "../filters/paths.filter";
-import { ContentBuilder, FileSaveOptions } from "../shared";
+import { ContentBuilder, defaultConfiguration, FileSaveOptions } from "../shared";
 
 export class RobotsBuilder extends ContentBuilder {
   constructor(
@@ -10,7 +10,16 @@ export class RobotsBuilder extends ContentBuilder {
   }
 
   protected getContent() {
-    const { robotsDisallowedPages, input: { langs, hostname, files: { sitemap } } } = this.paths;
+    const {
+      robotsDisallowedPages,
+      input: {
+        langs = defaultConfiguration.langs,
+        hostname = defaultConfiguration.hostname,
+        files: {
+          sitemap = defaultConfiguration.files.sitemap
+        }
+      }
+    } = this.paths;
 
     const result = [
       'User-agent: *',

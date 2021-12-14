@@ -11,7 +11,7 @@
     "start": "node demo/index.js",
     "start:ts": "nodemon demo/index.ts",
     "publish": "cd dist && npm publish",
-    "publish:auth": "shx cp .npmrc dist && cd dist && npm publish"
+    "publish:auth": "npm run build && shx cp .npmrc dist && cd dist && npm publish"
   },
   "repository": {
     "type": "git",

@@ -1,5 +1,5 @@
 import { PathsFilter } from "../filters/paths.filter";
-import { ContentBuilder, FileSaveOptions } from "../shared";
+import { ContentBuilder, defaultConfiguration, FileSaveOptions } from "../shared";
 
 export class RoutesBuilder extends ContentBuilder {
   constructor(
@@ -10,7 +10,12 @@ export class RoutesBuilder extends ContentBuilder {
   }
 
   protected getContent() {
-    const { allPages, input: { langs } } = this.paths;
+    const {
+      routesPages,
+      input: {
+        langs = defaultConfiguration.langs
+      }
+    } = this.paths;
 
     //console.log('Filtered Routes found: \n')
     //console.log('"' + sitemapPages.join('"\n"') + '"');
@@ -19,7 +24,7 @@ export class RoutesBuilder extends ContentBuilder {
     //console.log('"' + allPages.join('"\n"') + '"');
 
     const result = langs.map(lang =>
-      allPages.map(page =>
+      routesPages.map(page =>
         `/${lang}${page}`).join('\n')).join('\n');
 
     return result;

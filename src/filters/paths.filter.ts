@@ -1,55 +1,144 @@
 import { readFileSync } from "fs";
-import { NgRoutesInput } from "../shared";
+import { defaultConfiguration, FilesRoutesBuilderInput } from "../shared";
 
 export class PathsFilter {
-  allPages: string[] = [];
+  routesPages: string[] = [];
   sitemapPages: string[] = [];
   robotsDisallowedPages: string[] = [];
-
-  customPages: string[] = [];
-  customLangs: string[][] = [];
-
   sitemapCustomLangPages: Record<string, string[]> = {};
 
+  private customPages: string[] = [];
+  private customLangs: string[][] = [];
   private pathsBeforeFiltering: string[] = [];
 
-  constructor(public input: NgRoutesInput) {
-    this.pathsBeforeFiltering = this.getPathsBeforeFiltering();
+  isRoutesPages = false;
+  isSitemapPages = false;
+  isRobotsPages = false;
 
-    this.allPages = this.get(this.filerAllPages);
-    this.sitemapPages = this.get(this.filterSitemap);
-    this.robotsDisallowedPages = this.get(this.filterRobotsDisallowed);
-    this.customPages = this.get(this.filterCustomPages);
-    this.customLangs = this.filterCustomLangs();
+  /**
+   * It works pretty simple - in routingFile will be found pathSplitter
+   * then every string line which contains `path: '..anything...'`
+   * @param input
+   */
+  constructor(public input: FilesRoutesBuilderInput) {
+    const {
+      routingFilePath = defaultConfiguration.routingFilePath,
+      paths = defaultConfiguration.paths
+    } = this.input;
 
-    this.sitemapCustomLangPages = this.getSitemapLangsPages();
+    if (routingFilePath) {
+      this.pathsBeforeFiltering = this.getPathsBeforeFiltering();
+      this.routesPages = this.get(this.filterRoutesPages);
+      this.sitemapPages = this.get(this.filterSitemap);
+      this.robotsDisallowedPages = this.get(this.filterRobotsDisallowed);
+      this.customPages = this.get(this.filterCustomPages);
+      this.customLangs = this.filterCustomLangs();
+
+      this.sitemapCustomLangPages = this.getSitemapLangsPages();
+    }
+
+    if (Object.keys(paths).length) {
+      this.parseInputPaths();
+    }
+
+    this.setIsAvailable();
   }
 
+  private setIsAvailable() {
+    this.isSitemapPages = !!(this.sitemapPages.length || Object.keys(this.sitemapCustomLangPages).length);
+    this.isRobotsPages = !!this.robotsDisallowedPages.length;
+    this.isRoutesPages = !!this.routesPages.length;
+  }
+
+  private parseInputPaths() {
+    const { paths = defaultConfiguration.paths } = this.input;
+
+    Object.keys(paths).forEach(path => {
+      const { robots, routes, sitemap, sitemapCustomLangs = [] } = paths[path];
+
+      path = this.getPath(path);
+
+      if (routes && !this.routesPages.includes(path)) {
+        this.routesPages.push(path);
+      }
+
+      if (sitemap && !this.sitemapPages.includes(path)) {
+        this.sitemapPages.push(path);
+      }
+
+      if (robots && !this.robotsDisallowedPages.includes(path)) {
+        this.robotsDisallowedPages.push(path);
+      }
+
+      if (sitemapCustomLangs.length && !this.sitemapCustomLangPages[path]) {
+        this.sitemapCustomLangPages[path] = sitemapCustomLangs;
+      }
+    });
+  }
+  /**
+   * Returns lines of Angular Routing file with paths inside
+   * */
   private getPathsBeforeFiltering(): string[] {
-    const { routingFilePath, pathSplitter } = this.input;
+    const {
+      routingFilePath = defaultConfiguration.routingFilePath,
+      pathSplitter = defaultConfiguration.pathSplitter
+    } = this.input;
 
     return readFileSync(routingFilePath, 'utf-8')
       .split(pathSplitter)[1]
-      .split('[')[1]
+      .split('[')[1] // get first children set
       .split(']')[0]
-      .split('\n')
+      .split('\n') // and split it by lines
       .map(x => x.trim())
-      .filter(x => x && !x.startsWith('/'));
+      .filter(x => x && !x.startsWith('/')); // ignore comments
   }
 
-  private getPathsAfterFiltering(filteredPaths: string[]) {
+  /**
+   * Returns paths array from , f.e ['', '/data1', '/data2']
+   * @param filteredPathsLines - result of getPathsBeforeFiltering 
+   */
+  private getPathsAfterFiltering(filteredPathsLines: string[]) {
+    // for Angular Routing file it's the path property with ':' ignore spaces
+    const pathProperty = 'path:';
 
-    return filteredPaths
+    return filteredPathsLines
+      // ignore error redirects
       .filter(item => item.indexOf('**') === -1)
-      .map(item => item.indexOf('path:') > -1 ?
-        item.split('path')[1]
-          .split('\'')[1]
-          .split('\'')[0] :
-        undefined)
+      .map(item => {
+        const lineWithoutSpaces = item.split('').filter(char => char !== ' ').join('');
+
+        if (lineWithoutSpaces.indexOf(pathProperty) > -1) { // path is 
+          const result = lineWithoutSpaces.split(pathProperty)[1];
+          const splitter = result[0]; // ", ' or `
+
+          // get path inside string brackets
+          return result.split(splitter)[1].split(splitter)[0];
+        }
+
+        return undefined;
+      })
       .filter(item => item !== undefined)
-      .map(path => path ? '/' + path : path);
+      .map(path => this.getPath(path));
   }
 
+  /**
+   * Final path result, should be starts with '/' and shouldn't end with it.
+   * Examples: '/start', '/main', '/price'. If empty - '' without '/', for paths like /en
+   * @param path Expected inputs like '/start', 'start', '/start/' or ''
+   */
+  private getPath(path: string) {
+    let result = path && !path.startsWith('/') ? '/' + path : path;
+    if (result.endsWith('/')) {
+      result = result.slice(0, -1); // remove last
+    }
+
+    return result;
+  }
+
+  /**
+   * Apply filter method and return only paths strings from a file
+   * @param filter Filter only concrete file using const like 'sitemap-ignore'
+   */
   private get(filter: () => string[]) {
     const filtered = filter.bind(this)();
     const result = this.getPathsAfterFiltering(filtered);
@@ -57,7 +146,10 @@ export class PathsFilter {
   }
 
   private filterSitemap = (): string[] => {
-    const { sitemapIgnore, sitemapOnlyForLang } = this.input.consts;
+    const {
+      sitemapIgnore = defaultConfiguration.consts.sitemapIgnore,
+      sitemapOnlyForLang = defaultConfiguration.consts.sitemapOnlyForLang
+    } = this.input.consts;
 
     return this.pathsBeforeFiltering.filter(item =>
       item.indexOf(sitemapIgnore) === -1 &&
@@ -65,13 +157,13 @@ export class PathsFilter {
   }
 
   private filterCustomPages = (): string[] => {
-    const { sitemapOnlyForLang } = this.input.consts;
+    const { sitemapOnlyForLang = defaultConfiguration.consts.sitemapOnlyForLang } = this.input.consts;
 
     return this.pathsBeforeFiltering.filter(item => item.indexOf(sitemapOnlyForLang) !== -1);
   }
 
   private filterCustomLangs = (): string[][] => {
-    const { sitemapOnlyForLang } = this.input.consts;
+    const { sitemapOnlyForLang = defaultConfiguration.consts.sitemapOnlyForLang } = this.input.consts;
 
     return this.pathsBeforeFiltering
       .filter(item => item.indexOf(sitemapOnlyForLang) !== -1)
@@ -84,12 +176,12 @@ export class PathsFilter {
   }
 
   private filterRobotsDisallowed = (): string[] => {
-    const { robotsDisallowed } = this.input.consts;
+    const { robotsDisallowed = defaultConfiguration.consts.robotsDisallowed } = this.input.consts;
 
     return this.pathsBeforeFiltering.filter(item => item.indexOf(robotsDisallowed) !== -1);
   }
 
-  private filerAllPages() {
+  private filterRoutesPages() {
     return this.pathsBeforeFiltering.filter(page => page.indexOf('/:') === -1);
   }
 
